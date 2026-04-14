@@ -1,55 +1,115 @@
-
 #include <stdio.h>
 #include <string.h>
 #include "user.h"
 
-int login(){
+User users[MAX_USERS];
+int userCount = 0;
 
-    char username[50],password[50];
-    char u[50],p[50];
+/* -------- LOAD USERS -------- */
 
-    FILE *fp=fopen("users.txt","r");
+void loadUsers()
+{
+FILE *fp = fopen("users.txt","r");
 
-    if(fp==NULL){
-        printf("No users found. Create account first.\n");
-        return 0;
-    }
 
-    printf("Username: ");
-    scanf("%s",username);
+if(fp == NULL)
+    return;
 
-    printf("Password: ");
-    scanf("%s",password);
-
-    while(fscanf(fp,"%s %s",u,p)!=EOF){
-
-        if(strcmp(username,u)==0 && strcmp(password,p)==0){
-            fclose(fp);
-            printf("Login successful\n");
-            return 1;
-        }
-    }
-
-    fclose(fp);
-    printf("Invalid login\n");
-    return 0;
+while(fscanf(fp,"%[^|]|%[^|]|%[^\n]\n",
+    users[userCount].name,
+    users[userCount].phone,
+    users[userCount].password) == 3)
+{
+    userCount++;
 }
 
-void createAccount(){
+fclose(fp);
 
-    char u[50],p[50];
 
-    FILE *fp=fopen("users.txt","a");
+}
 
-    printf("New username: ");
-    scanf("%s",u);
+/* -------- SAVE USERS -------- */
 
-    printf("New password: ");
-    scanf("%s",p);
+void saveUsers()
+{
+FILE *fp = fopen("users.txt","w");
 
-    fprintf(fp,"%s %s\n",u,p);
 
-    fclose(fp);
+if(fp == NULL)
+    return;
 
-    printf("Account created successfully\n");
+for(int i=0;i<userCount;i++)
+{
+    fprintf(fp,"%s|%s|%s\n",
+        users[i].name,
+        users[i].phone,
+        users[i].password);
+}
+
+fclose(fp);
+
+
+}
+
+/* -------- CREATE ACCOUNT -------- */
+
+void createAccount()
+{
+if(userCount >= MAX_USERS)
+{
+printf("User limit reached\n");
+return;
+}
+
+
+printf("\n===== CREATE ACCOUNT =====\n");
+
+printf("Enter username: ");
+scanf(" %[^\n]", users[userCount].name);
+
+printf("Enter phone number: ");
+scanf("%s", users[userCount].phone);
+
+printf("Enter password: ");
+scanf("%s", users[userCount].password);
+
+userCount++;
+
+saveUsers();
+
+printf("Account created successfully\n");
+
+
+}
+
+/* -------- LOGIN -------- */
+
+int login()
+{
+char input[50], pass[50];
+
+
+printf("\n===== LOGIN =====\n");
+
+printf("Enter username or phone: ");
+scanf("%s", input);
+
+printf("Enter password: ");
+scanf("%s", pass);
+
+for(int i=0;i<userCount;i++)
+{
+    if((strcmp(users[i].name,input) == 0 ||
+        strcmp(users[i].phone,input) == 0) &&
+        strcmp(users[i].password,pass) == 0)
+    {
+        printf("Login successful\n");
+        return 1;
+    }
+}
+
+printf("Invalid credentials\n");
+return 0;
+
+
 }

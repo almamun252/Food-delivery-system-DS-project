@@ -6,6 +6,7 @@
 #include "order.h"
 #include "rider.h"
 #include "location.h"
+#include "graph.h"
 
 int main()
 {
