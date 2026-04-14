@@ -10,6 +10,7 @@
 int main()
 {
 
+loadUsers();
 loadLocations();
 loadGraph();
 loadRestaurants();

@@ -48,3 +48,4 @@ Tasty Corner|Club Sandwich|180
 Tasty Corner|Chicken Wrap|150
 Tasty Corner|Hot Dog|140
 Tasty Corner|Chicken Shawarma|200
+Royal Kitchen|Khichuri|200
