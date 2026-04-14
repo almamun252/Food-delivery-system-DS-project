@@ -1,0 +1,4 @@
+foodapp.exe
+*.exe
+*.o
+*.log

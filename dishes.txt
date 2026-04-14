@@ -1,0 +1,50 @@
+Chillox|Beef Burger|220
+Chillox|Chicken Burger|200
+Chillox|Fish Fry|250
+Chillox|Fries|120
+Chillox|Chicken Wings|300
+Pizza Hut|Pizza|500
+Pizza Hut|Cheese Pizza|550
+Pizza Hut|Pasta|350
+Pizza Hut|Garlic Bread|200
+Pizza Hut|Lasagna|450
+Kacchi Bhai|Kacchi|300
+Kacchi Bhai|Borhani|80
+Kacchi Bhai|Firni|120
+Kacchi Bhai|Chicken Roast|180
+Kacchi Bhai|Tehari|250
+Cute Food|Cake|30
+Cute Food|Cupcake|50
+Cute Food|Donut|70
+Cute Food|Brownie|90
+Cute Food|Pastry|60
+Burger King|Whopper|450
+Burger King|Chicken Burger|350
+Burger King|Double Burger|500
+Burger King|Fries|150
+Burger King|Onion Rings|180
+Star Coffee|Espresso|180
+Star Coffee|Cappuccino|220
+Star Coffee|Cold Coffee|200
+Star Coffee|Latte|210
+Star Coffee|Mocha|230
+Food Palace|Fried Rice|200
+Food Palace|Chicken Curry|220
+Food Palace|Beef Curry|250
+Food Palace|Noodles|180
+Food Palace|Soup|120
+Royal Kitchen|Butter Chicken|320
+Royal Kitchen|Naan|60
+Royal Kitchen|Biryani|350
+Royal Kitchen|Chicken Tikka|280
+Royal Kitchen|Paneer Curry|260
+Street Bites|Fuchka|50
+Street Bites|Chotpoti|60
+Street Bites|Jhalmuri|40
+Street Bites|Egg Roll|90
+Street Bites|Chicken Roll|120
+Tasty Corner|Sandwich|120
+Tasty Corner|Club Sandwich|180
+Tasty Corner|Chicken Wrap|150
+Tasty Corner|Hot Dog|140
+Tasty Corner|Chicken Shawarma|200

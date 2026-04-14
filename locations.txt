@@ -1,0 +1,10 @@
+Restaurant Hub
+University
+City Center
+Bus Stand
+Customer Home
+Rail Station
+Shopping Mall
+Airport
+Hospital
+Park
