@@ -64,14 +64,99 @@ return;
 
 printf("\n===== CREATE ACCOUNT =====\n");
 
+/* USERNAME */
+
 printf("Enter username: ");
 scanf(" %[^\n]", users[userCount].name);
 
-printf("Enter phone number: ");
-scanf("%s", users[userCount].phone);
+/* PHONE NUMBER VALIDATION */
 
-printf("Enter password: ");
-scanf("%s", users[userCount].password);
+char phone[20];
+int valid;
+
+while(1)
+{
+    printf("Enter phone number (11 digits): ");
+    scanf("%s", phone);
+
+    valid = 1;
+
+    if(strlen(phone) != 11)
+        valid = 0;
+
+    for(int i=0;i<strlen(phone);i++)
+    {
+        if(phone[i] < '0' || phone[i] > '9')
+        {
+            valid = 0;
+            break;
+        }
+    }
+
+    if(!valid)
+    {
+        printf("Invalid phone number. Must be 11 digits.\n");
+        continue;
+    }
+
+    /* Duplicate check */
+
+    int duplicate = 0;
+
+    for(int i=0;i<userCount;i++)
+    {
+        if(strcmp(users[i].phone, phone) == 0)
+        {
+            duplicate = 1;
+            break;
+        }
+    }
+
+    if(duplicate)
+    {
+        printf("Phone number already registered\n");
+        continue;
+    }
+
+    break;
+}
+
+strcpy(users[userCount].phone, phone);
+
+
+/* PASSWORD VALIDATION */
+
+char password[50];
+
+while(1)
+{
+    printf("Enter password (numbers only, min 4 digits): ");
+    scanf("%s", password);
+
+    valid = 1;
+
+    if(strlen(password) < 4)
+        valid = 0;
+
+    for(int i=0;i<strlen(password);i++)
+    {
+        if(password[i] < '0' || password[i] > '9')
+        {
+            valid = 0;
+            break;
+        }
+    }
+
+    if(!valid)
+    {
+        printf("Invalid password. Only numbers allowed (min 4 digits).\n");
+        continue;
+    }
+
+    break;
+}
+
+strcpy(users[userCount].password, password);
 
 userCount++;
 

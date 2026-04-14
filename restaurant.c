@@ -21,11 +21,15 @@ if(fp == NULL)
 
 char name[50];
 int node;
+int sum,count;
 
-while(fscanf(fp,"%[^|]|%d\n",name,&node) == 2)
+while(fscanf(fp,"%[^|]|%d|%d|%d\n",name,&node,&sum,&count) == 4)
 {
     strcpy(restaurants[restaurantCount].name,name);
     restaurants[restaurantCount].node = node;
+
+    restaurants[restaurantCount].ratingSum = sum;
+    restaurants[restaurantCount].ratingCount = count;
 
     restaurantCount++;
 }
@@ -47,9 +51,11 @@ if(fp == NULL)
 
 for(int i=0;i<restaurantCount;i++)
 {
-    fprintf(fp,"%s|%d\n",
+    fprintf(fp,"%s|%d|%d|%d\n",
             restaurants[i].name,
-            restaurants[i].node);
+            restaurants[i].node,
+            restaurants[i].ratingSum,
+            restaurants[i].ratingCount);
 }
 
 fclose(fp);
@@ -95,9 +101,7 @@ if(locationCount == 0)
 printf("\nSelect Restaurant Location\n");
 
 for(int i=0;i<locationCount;i++)
-{
     printf("%d. %s\n", i, locations[i].name);
-}
 
 int loc;
 
@@ -112,6 +116,9 @@ if(loc < 0 || loc >= locationCount)
 
 strcpy(restaurants[restaurantCount].name,name);
 restaurants[restaurantCount].node = loc;
+
+restaurants[restaurantCount].ratingSum = 0;
+restaurants[restaurantCount].ratingCount = 0;
 
 restaurantCount++;
 
@@ -155,9 +162,7 @@ if(found == -1)
 }
 
 for(int i=found;i<restaurantCount-1;i++)
-{
     restaurants[i] = restaurants[i+1];
-}
 
 restaurantCount--;
 
@@ -183,11 +188,77 @@ if(restaurantCount == 0)
 
 for(int i=0;i<restaurantCount;i++)
 {
-    printf("%d. %-15s | Location: %s\n",
+    float avg = 0;
+
+    if(restaurants[i].ratingCount > 0)
+        avg = (float)restaurants[i].ratingSum /
+              restaurants[i].ratingCount;
+
+    printf("%d. %-15s | Location: %-15s | Rating: %.1f\n",
            i+1,
            restaurants[i].name,
-           locations[restaurants[i].node].name);
+           locations[restaurants[i].node].name,
+           avg);
 }
+
+
+}
+
+/* ---------- RATE RESTAURANT ---------- */
+
+void rateRestaurant()
+{
+if(restaurantCount == 0)
+{
+printf("No restaurants available\n");
+return;
+}
+
+
+printf("\n===== RATE RESTAURANT =====\n");
+
+for(int i=0;i<restaurantCount;i++)
+{
+    float avg = 0;
+
+    if(restaurants[i].ratingCount > 0)
+        avg = (float)restaurants[i].ratingSum /
+              restaurants[i].ratingCount;
+
+    printf("%d. %s (Rating: %.1f)\n",
+           i+1,
+           restaurants[i].name,
+           avg);
+}
+
+int choice;
+
+printf("Select restaurant: ");
+scanf("%d",&choice);
+
+if(choice < 1 || choice > restaurantCount)
+{
+    printf("Invalid choice\n");
+    return;
+}
+
+int rating;
+
+printf("Give rating (1-5): ");
+scanf("%d",&rating);
+
+if(rating < 1 || rating > 5)
+{
+    printf("Invalid rating\n");
+    return;
+}
+
+restaurants[choice-1].ratingSum += rating;
+restaurants[choice-1].ratingCount++;
+
+saveRestaurants();
+
+printf("Rating submitted successfully\n");
 
 
 }
@@ -227,9 +298,7 @@ if(choice < 1 || choice > restaurantCount)
 printf("\nAvailable Locations\n");
 
 for(int i=0;i<locationCount;i++)
-{
     printf("%d. %s\n",i,locations[i].name);
-}
 
 int loc;
 
