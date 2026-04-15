@@ -7,7 +7,6 @@ typedef struct
 {
     char name[50];
     int node;
-
     int ratingSum;
     int ratingCount;
 
@@ -23,5 +22,9 @@ void removeRestaurant();
 void viewRestaurants();
 void rateRestaurant();
 void changeRestaurantLocation();
+
+/* Heap Feature */
+
+void showTopRestaurants();
 
 #endif

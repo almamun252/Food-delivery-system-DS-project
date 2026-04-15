@@ -6,6 +6,82 @@
 Restaurant restaurants[MAX_RESTAURANTS];
 int restaurantCount = 0;
 
+/* ---------- HEAP STRUCT ---------- */
+
+typedef struct
+{
+char name[50];
+float rating;
+} HeapNode;
+
+HeapNode heap[MAX_RESTAURANTS];
+int heapSize = 0;
+
+/* ---------- HEAP UTILITY ---------- */
+
+void swapHeap(HeapNode *a, HeapNode *b)
+{
+HeapNode temp = *a;
+*a = *b;
+*b = temp;
+}
+
+void heapifyDown(int i)
+{
+int largest = i;
+int left = 2*i + 1;
+int right = 2*i + 2;
+
+
+if(left < heapSize && heap[left].rating > heap[largest].rating)
+    largest = left;
+
+if(right < heapSize && heap[right].rating > heap[largest].rating)
+    largest = right;
+
+if(largest != i)
+{
+    swapHeap(&heap[i], &heap[largest]);
+    heapifyDown(largest);
+}
+
+
+}
+
+void insertHeap(char name[], float rating)
+{
+int i = heapSize;
+
+
+strcpy(heap[i].name, name);
+heap[i].rating = rating;
+
+heapSize++;
+
+while(i != 0 && heap[(i-1)/2].rating < heap[i].rating)
+{
+    swapHeap(&heap[i], &heap[(i-1)/2]);
+    i = (i-1)/2;
+}
+
+
+}
+
+HeapNode extractMax()
+{
+HeapNode root = heap[0];
+
+
+heap[0] = heap[heapSize-1];
+heapSize--;
+
+heapifyDown(0);
+
+return root;
+
+
+}
+
 /* ---------- LOAD RESTAURANTS ---------- */
 
 void loadRestaurants()
@@ -19,12 +95,17 @@ if(fp == NULL)
     return;
 }
 
+restaurantCount = 0;
+
 char name[50];
 int node;
 int sum,count;
 
 while(fscanf(fp,"%[^|]|%d|%d|%d\n",name,&node,&sum,&count) == 4)
 {
+    if(restaurantCount >= MAX_RESTAURANTS)
+        break;
+
     strcpy(restaurants[restaurantCount].name,name);
     restaurants[restaurantCount].node = node;
 
@@ -80,8 +161,6 @@ printf("\n===== ADD RESTAURANT =====\n");
 
 printf("Enter restaurant name: ");
 scanf(" %[^\n]", name);
-
-/* Duplicate check */
 
 for(int i=0;i<restaurantCount;i++)
 {
@@ -191,8 +270,10 @@ for(int i=0;i<restaurantCount;i++)
     float avg = 0;
 
     if(restaurants[i].ratingCount > 0)
+    {
         avg = (float)restaurants[i].ratingSum /
               restaurants[i].ratingCount;
+    }
 
     printf("%d. %-15s | Location: %-15s | Rating: %.1f\n",
            i+1,
@@ -222,10 +303,12 @@ for(int i=0;i<restaurantCount;i++)
     float avg = 0;
 
     if(restaurants[i].ratingCount > 0)
+    {
         avg = (float)restaurants[i].ratingSum /
               restaurants[i].ratingCount;
+    }
 
-    printf("%d. %s (Rating: %.1f)\n",
+    printf("%d. %s (Rating %.1f)\n",
            i+1,
            restaurants[i].name,
            avg);
@@ -259,6 +342,51 @@ restaurants[choice-1].ratingCount++;
 saveRestaurants();
 
 printf("Rating submitted successfully\n");
+
+
+}
+
+/* ---------- TOP RATED RESTAURANTS (HEAP) ---------- */
+
+void showTopRestaurants()
+{
+if(restaurantCount == 0)
+{
+printf("No restaurants available\n");
+return;
+}
+
+
+heapSize = 0;
+
+for(int i=0;i<restaurantCount;i++)
+{
+    float avg = 0;
+
+    if(restaurants[i].ratingCount > 0)
+    {
+        avg = (float)restaurants[i].ratingSum /
+              restaurants[i].ratingCount;
+    }
+
+    insertHeap(restaurants[i].name, avg);
+}
+
+printf("\n===== TOP RATED RESTAURANTS =====\n");
+
+int limit = 3;
+if(limit > heapSize)
+    limit = heapSize;
+
+for(int i=0;i<limit;i++)
+{
+    HeapNode top = extractMax();
+
+    printf("%d. %s (Rating %.1f)\n",
+           i+1,
+           top.name,
+           top.rating);
+}
 
 
 }

@@ -7,6 +7,9 @@
 #include "location.h"
 
 #define MAX_CART 20
+#define MAX_QUEUE 50
+
+/* -------- CART ITEM -------- */
 
 typedef struct
 {
@@ -15,32 +18,133 @@ char dish[50];
 int price;
 } CartItem;
 
+/* -------- ORDER STRUCT -------- */
+
+typedef struct
+{
+CartItem items[MAX_CART];
+int itemCount;
+int location;
+int totalBill;
+int restaurantNode;
+} Order;
+
+/* -------- QUEUE -------- */
+
+Order orderQueue[MAX_QUEUE];
+int front = 0;
+int rear = -1;
+
+/* -------- CART -------- */
+
 CartItem cart[MAX_CART];
 int cartCount = 0;
 
 char orderHistory[50][100];
 int orderCount = 0;
 
-/* -------- FIND NEAREST RIDER -------- */
+/* -------- QUEUE FUNCTIONS -------- */
 
-int findNearestRider(int loc)
+void enqueueOrder(Order o)
 {
-int minDist = 9999;
-int best = -1;
+if(rear >= MAX_QUEUE-1)
+{
+printf("Order queue full\n");
+return;
+}
+
+
+rear++;
+orderQueue[rear] = o;
+
+
+}
+
+Order dequeueOrder()
+{
+return orderQueue[front++];
+}
+
+int isQueueEmpty()
+{
+return front > rear;
+}
+
+/* -------- FIND BEST RIDER -------- */
+
+int findBestRider(int restaurantNode, int customerNode)
+{
+int bestRider = -1;
+int bestDistance = 9999;
 
 
 for(int i=0;i<riderCount;i++)
 {
-    int d = getDistance(riders[i].node, loc);
+    int d1 = getDistance(riders[i].node, restaurantNode);
+    int d2 = getDistance(restaurantNode, customerNode);
 
-    if(d < minDist)
+    int total = d1 + d2;
+
+    if(total < bestDistance)
     {
-        minDist = d;
-        best = i;
+        bestDistance = total;
+        bestRider = i;
     }
 }
 
-return best;
+return bestRider;
+
+
+}
+
+/* -------- PROCESS ORDER -------- */
+
+void processOrders()
+{
+while(!isQueueEmpty())
+{
+Order o = dequeueOrder();
+
+
+    printf("\n===== PROCESSING ORDER =====\n");
+
+    for(int i=0;i<o.itemCount;i++)
+    {
+        printf("%s (%s) - %d Tk\n",
+               o.items[i].dish,
+               o.items[i].restaurant,
+               o.items[i].price);
+    }
+
+    printf("Total Bill : %d Tk\n", o.totalBill);
+
+    int riderIndex = findBestRider(o.restaurantNode, o.location);
+
+    if(riderIndex != -1)
+    {
+        printf("\n----- DELIVERY DETAILS -----\n");
+        printf("Rider Name : %s\n", riders[riderIndex].name);
+        printf("Phone      : %s\n", riders[riderIndex].phone);
+
+        riders[riderIndex].node = o.location;
+    }
+    else
+    {
+        printf("No rider available\n");
+    }
+
+    if(orderCount < 50)
+    {
+        sprintf(orderHistory[orderCount],
+                "Items:%d | Total:%d Tk",
+                o.itemCount,
+                o.totalBill);
+
+        orderCount++;
+    }
+
+    printf("Order delivered successfully\n");
+}
 
 
 }
@@ -56,8 +160,6 @@ int count;
 
 cartCount = 0;
 
-/* -------- ADD ITEMS TO CART -------- */
-
 while(1)
 {
     if(restaurantCount == 0)
@@ -72,6 +174,7 @@ while(1)
         printf("%d. %s\n",i+1,restaurants[i].name);
 
     printf("0 Finish Order\n");
+
     printf("Enter choice: ");
     scanf("%d",&rChoice);
 
@@ -90,18 +193,16 @@ while(1)
 
     for(int i=0;i<dishCount;i++)
     {
-        if(strcmp(dishes[i].restaurant, restaurants[rChoice-1].name) == 0)
+        if(strcmp(dishes[i].restaurant,
+                  restaurants[rChoice-1].name)==0)
         {
-            printf("%d. %s (%d Tk)\n",count+1,dishes[i].name,dishes[i].price);
-            dishIndexes[count] = i;
-            count++;
-        }
-    }
+            printf("%d. %s (%d Tk)\n",
+                   count+1,
+                   dishes[i].name,
+                   dishes[i].price);
 
-    if(count == 0)
-    {
-        printf("No dishes available\n");
-        continue;
+            dishIndexes[count++] = i;
+        }
     }
 
     printf("Enter choice: ");
@@ -109,40 +210,25 @@ while(1)
 
     if(dChoice < 1 || dChoice > count)
     {
-        printf("Invalid choice\n");
+        printf("Invalid dish choice\n");
         continue;
-    }
-
-    if(cartCount >= MAX_CART)
-    {
-        printf("Cart full\n");
-        break;
     }
 
     int selected = dishIndexes[dChoice-1];
 
-    strcpy(cart[cartCount].restaurant, dishes[selected].restaurant);
-    strcpy(cart[cartCount].dish, dishes[selected].name);
+    strcpy(cart[cartCount].restaurant,
+           dishes[selected].restaurant);
+
+    strcpy(cart[cartCount].dish,
+           dishes[selected].name);
+
     cart[cartCount].price = dishes[selected].price;
 
     cartCount++;
-
-    printf("Item added to cart\n");
 }
 
 if(cartCount == 0)
-{
-    printf("No items selected\n");
     return;
-}
-
-/* -------- DELIVERY LOCATION -------- */
-
-if(locationCount <= 1)
-{
-    printf("Location list empty\n");
-    return;
-}
 
 printf("\n===== DELIVERY LOCATION =====\n");
 
@@ -160,127 +246,77 @@ if(loc < 1 || loc >= locationCount)
     return;
 }
 
-/* -------- RECEIPT -------- */
-
 int foodTotal = 0;
 
-printf("\n===== ORDER RECEIPT =====\n");
-
 for(int i=0;i<cartCount;i++)
-{
-    printf("%s (%s) - %d Tk\n",
-           cart[i].dish,
-           cart[i].restaurant,
-           cart[i].price);
-
     foodTotal += cart[i].price;
-}
 
-/* -------- DELIVERY CHARGE CALCULATION -------- */
-
-int deliveryCharge = 0;
+/* -------- DELIVERY CHARGE -------- */
 
 char usedRestaurants[20][50];
 int usedCount = 0;
-int restaurantCharge[20];
 
 for(int i=0;i<cartCount;i++)
 {
-    int found = -1;
+    int found = 0;
 
     for(int j=0;j<usedCount;j++)
     {
-        if(strcmp(usedRestaurants[j], cart[i].restaurant) == 0)
+        if(strcmp(usedRestaurants[j], cart[i].restaurant)==0)
         {
-            found = j;
+            found = 1;
             break;
         }
     }
 
-    if(found == -1)
+    if(!found)
     {
         strcpy(usedRestaurants[usedCount], cart[i].restaurant);
-
-        int restaurantNode = -1;
-
-        for(int r=0;r<restaurantCount;r++)
-        {
-            if(strcmp(restaurants[r].name, cart[i].restaurant) == 0)
-            {
-                restaurantNode = restaurants[r].node;
-                break;
-            }
-        }
-
-        int distance = getDistance(restaurantNode, loc);
-
-        int charge;
-
-        /* -------- NEW DELIVERY RULE -------- */
-
-        if(distance <= 3)
-            charge = 50;
-        else
-            charge = 50 + (distance - 3) * 10;
-
-        restaurantCharge[usedCount] = charge;
-
-        deliveryCharge += charge;
-
         usedCount++;
     }
 }
 
-int total = foodTotal + deliveryCharge;
+int deliveryCharge = usedCount * 50;
 
-printf("\n----- DELIVERY CHARGES -----\n");
+int totalBill = foodTotal + deliveryCharge;
 
-for(int i=0;i<usedCount;i++)
-{
-    printf("%s : %d Tk\n",
-           usedRestaurants[i],
-           restaurantCharge[i]);
-}
-
-printf("-------------------------------\n");
+printf("\n----- BILL DETAILS -----\n");
 printf("Food Total      : %d Tk\n", foodTotal);
 printf("Delivery Charge : %d Tk\n", deliveryCharge);
-printf("Total Bill      : %d Tk\n", total);
+printf("Total Bill      : %d Tk\n", totalBill);
 
-/* -------- RIDER ASSIGNMENT -------- */
+Order newOrder;
 
-if(riderCount > 0)
+newOrder.itemCount = cartCount;
+newOrder.location = loc;
+newOrder.totalBill = totalBill;
+
+int restaurantNode = -1;
+
+for(int i=0;i<restaurantCount;i++)
 {
-    int riderIndex = findNearestRider(loc);
-
-    if(riderIndex != -1)
+    if(strcmp(restaurants[i].name, cart[0].restaurant)==0)
     {
-        printf("\n----- DELIVERY DETAILS -----\n");
-        printf("Rider Name      : %s\n", riders[riderIndex].name);
-        printf("Phone           : %s\n", riders[riderIndex].phone);
-
-        riders[riderIndex].node = loc;
+        restaurantNode = restaurants[i].node;
+        break;
     }
 }
 
-/* -------- SAVE HISTORY -------- */
+newOrder.restaurantNode = restaurantNode;
 
-if(orderCount < 50)
-{
-    sprintf(orderHistory[orderCount],
-            "Items:%d | Total:%d Tk",
-            cartCount,
-            total);
+for(int i=0;i<cartCount;i++)
+    newOrder.items[i] = cart[i];
 
-    orderCount++;
-}
+enqueueOrder(newOrder);
 
-printf("\nOrder placed successfully!\n");
+printf("\nOrder added to queue successfully\n");
+
+processOrders();
 
 
 }
 
-/* -------- ORDER HISTORY -------- */
+/* -------- HISTORY -------- */
 
 void showHistory()
 {

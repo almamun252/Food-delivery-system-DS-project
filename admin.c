@@ -4,9 +4,12 @@
 #include "restaurant.h"
 #include "dish.h"
 #include "rider.h"
+#include "order.h"
 
 #define ADMIN_USER "admin"
 #define ADMIN_PASS "12345"
+
+/* -------- ADMIN LOGIN -------- */
 
 int adminLogin()
 {
@@ -21,7 +24,8 @@ scanf("%s", user);
 printf("Password: ");
 scanf("%s", pass);
 
-if(strcmp(user, ADMIN_USER) == 0 && strcmp(pass, ADMIN_PASS) == 0)
+if(strcmp(user, ADMIN_USER) == 0 &&
+   strcmp(pass, ADMIN_PASS) == 0)
 {
     printf("Login Successful\n");
     return 1;
@@ -33,6 +37,8 @@ return 0;
 
 }
 
+/* -------- ADMIN MENU -------- */
+
 void adminMenu()
 {
 int choice;
@@ -41,19 +47,26 @@ int choice;
 while(1)
 {
     printf("\n===== ADMIN PANEL =====\n");
-    printf("1 Add Restaurant\n");
-    printf("2 Remove Restaurant\n");
-    printf("3 View Restaurants\n");
-    printf("4 Change Restaurant Location\n");
-    printf("5 Add Dish\n");
-    printf("6 Delete Dish\n");
-    printf("7 View Dishes\n");
-    printf("8 Add Rider\n");
-    printf("9 View Riders\n");
-    printf("10 Logout\n");
+
+    printf("1  Add Restaurant\n");
+    printf("2  Remove Restaurant\n");
+    printf("3  View Restaurants\n");
+    printf("4  Change Restaurant Location\n");
+
+    printf("5  Add Dish\n");
+    printf("6  Delete Dish\n");
+    printf("7  View Dishes\n");
+
+    printf("8  Add Rider\n");
+    printf("9  View Riders\n");
+
+    printf("10 View Top Rated Restaurants\n");   /* Heap */
+
+
+    printf("11 Logout\n");
 
     printf("\nEnter your choice: ");
-    scanf("%d", &choice);
+    scanf("%d",&choice);
 
     switch(choice)
     {
@@ -70,8 +83,8 @@ while(1)
             break;
 
         case 4:
-        changeRestaurantLocation();
-        break;
+            changeRestaurantLocation();
+            break;
 
         case 5:
             addDish();
@@ -94,6 +107,10 @@ while(1)
             break;
 
         case 10:
+            showTopRestaurants();   /* Heap Feature */
+            break;
+
+        case 11:
             printf("Logging out from admin panel...\n");
             return;
 

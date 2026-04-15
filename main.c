@@ -1,3 +1,6 @@
+//gcc *.c -o foodapp
+//.\foodapp.exe 
+
 #include <stdio.h>
 #include "user.h"
 #include "admin.h"
@@ -10,6 +13,8 @@
 
 int main()
 {
+/* -------- LOAD DATA -------- */
+
 
 loadUsers();
 loadLocations();
@@ -19,7 +24,6 @@ loadDishes();
 loadRiders();
 
 int loggedIn = 0;
-
 
 while(1)
 {
@@ -32,32 +36,26 @@ while(1)
     }
 
     printf("3 View Restaurants\n");
-    printf("4 View Food Menu\n");
+    printf("4 View Top Rated Restaurants\n");   /* Heap Feature */
+    printf("5 View Food Menu\n");
 
     if(loggedIn)
     {
-        printf("5 Order Food\n");
-    }
-
-    if(loggedIn)
-    {
-        printf("6 Rate Restaurant\n");
-    }
-
-    if(loggedIn)
-    {
-        printf("7 Order History\n");
-        printf("8 Logout\n");
+        printf("6 Order Food\n");
+        printf("7 Rate Restaurant\n");
+        printf("8 Order History\n");
+        printf("9 Logout\n");
     }
 
     if(!loggedIn)
     {
-        printf("9 Admin Login\n");
+        printf("10 Admin Login\n");
     }
 
     printf("0 Exit\n");
 
     int choice;
+
     printf("Enter choice: ");
     scanf("%d",&choice);
 
@@ -81,39 +79,51 @@ while(1)
             break;
 
         case 4:
+            showTopRestaurants();   /* Heap Feature */
+                break;
+        case 5:
             viewDishes();
             break;
 
-        case 5:
+        case 6:
             if(loggedIn)
                 orderFood();
             else
                 printf("Login required\n");
             break;
-
-        case 6:
-        if(loggedIn)
-            printf("Thanks for rating!\n");
-            break;
-
+            
         case 7:
             if(loggedIn)
-                showHistory();
+                rateRestaurant();
+            else
+                printf("Login required\n");
             break;
 
         case 8:
-            loggedIn = 0;
-            printf("Logged out\n");
+            if(loggedIn)
+                showHistory();
+            else
+                printf("Login required\n");
             break;
 
         case 9:
-            if(adminLogin())
+            if(loggedIn)
             {
-                adminMenu();
+                loggedIn = 0;
+                printf("Logged out\n");
+            }
+            break;
+
+        case 10:
+            if(!loggedIn)
+            {
+                if(adminLogin())
+                    adminMenu();
             }
             break;
 
         case 0:
+            printf("Exiting program...\n");
             return 0;
 
         default:

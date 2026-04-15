@@ -1,10 +1,10 @@
-Chillox|2
-Pizza Hut|6
-Kacchi Bhai|1
-Cute Food|4
-Burger King|6
-Star Coffee|5
-Food Palace|7
-Royal Kitchen|8
-Street Bites|3
-Tasty Corner|9
+Chillox|2|45|10
+Pizza Hut|6|42|10
+Kacchi Bhai|1|48|10
+Cute Food|4|30|10
+Burger King|6|40|10
+Star Coffee|5|38|10
+Food Palace|7|35|10
+Royal Kitchen|8|44|10
+Street Bites|3|33|10
+Tasty Corner|9|37|10
