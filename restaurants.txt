@@ -1,7 +1,7 @@
 Chillox|2|45|10
 Pizza Hut|6|42|10
 Kacchi Bhai|1|48|10
-Cute Food|4|30|10
+Cute Food|4|33|11
 Burger King|6|40|10
 Star Coffee|5|38|10
 Food Palace|7|35|10
