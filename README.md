@@ -44,18 +44,25 @@ The system allows users to create accounts, browse restaurants, order food, rate
 
 ##  Data Structures Used
 
-###  Graph
-- Represents locations and distances
-- Uses **Dijkstra’s Algorithm** for shortest path calculation
-- Helps assign the most efficient delivery rider
+### 1. Dynamic Memory Allocation (Malloc/Realloc/Free)
+- **Unlimited Scalability:** Uses dynamic arrays instead of static limits (MAX_LIMIT) for storing Users, Restaurants, Dishes, Riders, and Orders.
 
-###  Queue
-- Used for **order processing (FIFO)**
-- Ensures fair and sequential handling of customer orders
+### 2. Graph & Dijkstra’s Algorithm
+- **Structure:** Uses **Adjacency List** (Linked List based).
+- **Purpose:** Represents locations and distances.
+- **Algorithm:** Uses **Dijkstra’s Algorithm** for shortest path calculation to find the most efficient delivery rider.
 
-###  Max Heap
-- Used to maintain restaurant ratings
-- Quickly retrieves top-rated restaurants
+### 3. Binary Search Tree (BST)
+- **Purpose:** Used for managing the food menu (`menu.c`).
+- **Advantage:** Enables efficient searching and retrieval of food item prices (O(log n)).
+
+### 4. Queue (FIFO)
+- **Purpose:** Used for **order processing**.
+- **Advantage:** Ensures fair and sequential handling of customer orders.
+
+### 5. Max Heap
+- **Purpose:** Used to maintain restaurant ratings.
+- **Advantage:** Quickly retrieves the top-rated restaurants (O(1) max extraction).
 
 ---
 
