@@ -49,3 +49,5 @@ Tasty Corner|Chicken Wrap|150
 Tasty Corner|Hot Dog|140
 Tasty Corner|Chicken Shawarma|200
 Royal Kitchen|Khichuri|200
+Pizza Hut|amni kusna|34
+Chillox|Hello food|342

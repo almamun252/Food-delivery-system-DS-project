@@ -1,8 +1,6 @@
 #ifndef RIDER_H
 #define RIDER_H
 
-#define MAX_RIDERS 20
-
 typedef struct
 {
     char name[50];
@@ -10,8 +8,9 @@ typedef struct
     int node;   
 } Rider;
 
-extern Rider riders[MAX_RIDERS];
+extern Rider *riders;
 extern int riderCount;
+extern int riderCapacity;
 
 void loadRiders();
 void addRider();

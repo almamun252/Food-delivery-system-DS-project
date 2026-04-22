@@ -1,4 +1,3 @@
-
 #ifndef MENU_H
 #define MENU_H
 #include "structures.h"
@@ -9,5 +8,6 @@ void showMenu(FoodNode*);
 void searchFood(FoodNode*,char[]);
 void addFood(FoodNode**);
 int getFoodPrice(FoodNode*, char[]);
+void freeMenu(FoodNode*);
 
 #endif

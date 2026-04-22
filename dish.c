@@ -1,187 +1,197 @@
 #include <stdio.h>
+#include <stdlib.h> 
 #include <string.h>
 #include "dish.h"
 #include "restaurant.h"
 
-Dish dishes[MAX_DISHES];
-int dishCount = 0;
 
-/* ---------- LOAD DISHES ---------- */
+Dish *dishes = NULL;
+int dishCount = 0;
+int dishCapacity = 0;
+
+
 
 void loadDishes()
 {
-FILE *fp = fopen("dishes.txt","r");
+    FILE *fp = fopen("dishes.txt","r");
 
+    if(fp == NULL)
+    {
+        printf("dishes.txt not found\n");
+        return;
+    }
+    
+    dishCount = 0;
 
-if(fp == NULL)
-{
-    printf("dishes.txt not found\n");
-    return;
+    char rest[50], dish[50];
+    int price;
+
+    while(fscanf(fp,"%[^|]|%[^|]|%d\n",rest,dish,&price) == 3)
+    {
+        
+        if(dishCount >= dishCapacity)
+        {
+            dishCapacity = (dishCapacity == 0) ? 5 : dishCapacity * 2;
+            dishes = (Dish*)realloc(dishes, dishCapacity * sizeof(Dish));
+            
+            if(dishes == NULL)
+            {
+                printf("Memory allocation failed during loading dishes!\n");
+                fclose(fp);
+                return;
+            }
+        }
+
+        strcpy(dishes[dishCount].restaurant,rest);
+        strcpy(dishes[dishCount].name,dish);
+        dishes[dishCount].price = price;
+
+        dishCount++;
+    }
+
+    fclose(fp);
 }
 
-char rest[50], dish[50];
-int price;
 
-while(fscanf(fp,"%[^|]|%[^|]|%d\n",rest,dish,&price) == 3)
-{
-    strcpy(dishes[dishCount].restaurant,rest);
-    strcpy(dishes[dishCount].name,dish);
-    dishes[dishCount].price = price;
-
-    dishCount++;
-}
-
-fclose(fp);
-
-
-}
-
-/* ---------- SAVE DISHES ---------- */
 
 void saveDishes()
 {
-FILE *fp = fopen("dishes.txt","w");
+    FILE *fp = fopen("dishes.txt","w");
 
+    if(fp == NULL)
+        return;
 
-if(fp == NULL)
-    return;
+    for(int i=0;i<dishCount;i++)
+    {
+        fprintf(fp,"%s|%s|%d\n",
+                dishes[i].restaurant,
+                dishes[i].name,
+                dishes[i].price);
+    }
 
-for(int i=0;i<dishCount;i++)
-{
-    fprintf(fp,"%s|%s|%d\n",
-            dishes[i].restaurant,
-            dishes[i].name,
-            dishes[i].price);
+    fclose(fp);
 }
 
-fclose(fp);
 
-
-}
-
-/* ---------- ADD DISH ---------- */
 
 void addDish()
 {
-int choice;
+    int choice;
 
+    if(restaurantCount == 0)
+    {
+        printf("No restaurants available. Add restaurant first.\n");
+        return;
+    }
 
-if(dishCount >= MAX_DISHES)
-{
-    printf("Dish list is full\n");
-    return;
+    
+    if(dishCount >= dishCapacity)
+    {
+        dishCapacity = (dishCapacity == 0) ? 5 : dishCapacity * 2;
+        dishes = (Dish*)realloc(dishes, dishCapacity * sizeof(Dish));
+        
+        if(dishes == NULL)
+        {
+            printf("Memory allocation failed! Cannot add dish.\n");
+            return;
+        }
+    }
+
+    printf("\n===== ADD NEW DISH =====\n");
+
+    printf("Enter dish name: ");
+    scanf(" %[^\n]", dishes[dishCount].name);
+
+    printf("\nSelect Restaurant\n");
+
+    for(int i=0;i<restaurantCount;i++)
+    {
+        printf("%d. %s\n", i+1, restaurants[i].name);
+    }
+
+    printf("Enter choice: ");
+    scanf("%d",&choice);
+
+    if(choice < 1 || choice > restaurantCount)
+    {
+        printf("Invalid restaurant choice\n");
+        return;
+    }
+
+    strcpy(dishes[dishCount].restaurant, restaurants[choice-1].name);
+
+    printf("Enter price (Tk): ");
+    scanf("%d",&dishes[dishCount].price);
+
+    dishCount++;
+
+    saveDishes();
+
+    printf("Dish added successfully\n");
 }
 
-if(restaurantCount == 0)
-{
-    printf("No restaurants available. Add restaurant first.\n");
-    return;
-}
-
-printf("\n===== ADD NEW DISH =====\n");
-
-printf("Enter dish name: ");
-scanf(" %[^\n]", dishes[dishCount].name);
-
-printf("\nSelect Restaurant\n");
-
-for(int i=0;i<restaurantCount;i++)
-{
-    printf("%d. %s\n", i+1, restaurants[i].name);
-}
-
-printf("Enter choice: ");
-scanf("%d",&choice);
-
-if(choice < 1 || choice > restaurantCount)
-{
-    printf("Invalid restaurant choice\n");
-    return;
-}
-
-strcpy(dishes[dishCount].restaurant, restaurants[choice-1].name);
-
-printf("Enter price (Tk): ");
-scanf("%d",&dishes[dishCount].price);
-
-dishCount++;
-
-saveDishes();
-
-printf("Dish added successfully\n");
-
-
-}
-
-/* ---------- DELETE DISH ---------- */
 
 void deleteDish()
 {
-char name[50];
-int found = -1;
+    char name[50];
+    int found = -1;
 
-
-if(dishCount == 0)
-{
-    printf("No dishes available\n");
-    return;
-}
-
-printf("\n===== DELETE DISH =====\n");
-
-printf("Enter dish name to delete: ");
-scanf(" %[^\n]", name);
-
-for(int i=0;i<dishCount;i++)
-{
-    if(strcmp(dishes[i].name,name) == 0)
+    if(dishCount == 0)
     {
-        found = i;
-        break;
+        printf("No dishes available\n");
+        return;
     }
+
+    printf("\n===== DELETE DISH =====\n");
+
+    printf("Enter dish name to delete: ");
+    scanf(" %[^\n]", name);
+
+    for(int i=0;i<dishCount;i++)
+    {
+        if(strcmp(dishes[i].name,name) == 0)
+        {
+            found = i;
+            break;
+        }
+    }
+
+    if(found == -1)
+    {
+        printf("Dish not found\n");
+        return;
+    }
+
+    for(int i=found;i<dishCount-1;i++)
+    {
+        dishes[i] = dishes[i+1];
+    }
+
+    dishCount--;
+
+    saveDishes();
+
+    printf("Dish deleted successfully\n");
 }
 
-if(found == -1)
-{
-    printf("Dish not found\n");
-    return;
-}
 
-for(int i=found;i<dishCount-1;i++)
-{
-    dishes[i] = dishes[i+1];
-}
-
-dishCount--;
-
-saveDishes();
-
-printf("Dish deleted successfully\n");
-
-
-}
-
-/* ---------- VIEW DISHES ---------- */
 
 void viewDishes()
 {
-printf("\n===== FOOD MENU =====\n");
+    printf("\n===== FOOD MENU =====\n");
 
+    if(dishCount == 0)
+    {
+        printf("No dishes available\n");
+        return;
+    }
 
-if(dishCount == 0)
-{
-    printf("No dishes available\n");
-    return;
-}
-
-for(int i=0;i<dishCount;i++)
-{
-    printf("%d. %-15s | %4d Tk | %s\n",
-           i+1,
-           dishes[i].name,
-           dishes[i].price,
-           dishes[i].restaurant);
-}
-
-
+    for(int i=0;i<dishCount;i++)
+    {
+        printf("%d. %-15s | %4d Tk | %s\n",
+               i+1,
+               dishes[i].name,
+               dishes[i].price,
+               dishes[i].restaurant);
+    }
 }

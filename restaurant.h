@@ -1,8 +1,6 @@
 #ifndef RESTAURANT_H
 #define RESTAURANT_H
 
-#define MAX_RESTAURANTS 20
-
 typedef struct
 {
     char name[50];
@@ -12,8 +10,10 @@ typedef struct
 
 } Restaurant;
 
-extern Restaurant restaurants[MAX_RESTAURANTS];
+
+extern Restaurant *restaurants;
 extern int restaurantCount;
+extern int restaurantCapacity;
 
 void loadRestaurants();
 void saveRestaurants();
@@ -22,9 +22,6 @@ void removeRestaurant();
 void viewRestaurants();
 void rateRestaurant();
 void changeRestaurantLocation();
-
-/* Heap Feature */
-
 void showTopRestaurants();
 
 #endif

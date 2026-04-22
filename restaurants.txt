@@ -8,3 +8,4 @@ Food Palace|7|35|10
 Royal Kitchen|8|44|10
 Street Bites|3|33|10
 Tasty Corner|9|37|10
+Briani house|3|0|0

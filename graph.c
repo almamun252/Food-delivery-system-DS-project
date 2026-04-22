@@ -2,122 +2,148 @@
 #include "location.h"
 #include <limits.h>
 #include <stdio.h>
+#include <stdlib.h> 
 
 #define MAX 20
 #define INF 9999
 
-int graph[MAX][MAX];
 
-/* Load graph edges from graph.txt */
+typedef struct AdjListNode {
+    int dest;
+    int weight;
+    struct AdjListNode* next;
+} AdjListNode;
+
+
+AdjListNode* graph[MAX];
+
+
+void initGraph()
+{
+    for (int i = 0; i < MAX; i++) {
+        graph[i] = NULL;
+    }
+}
+
+
+void addEdge(int src, int dest, int weight)
+{
+    
+    AdjListNode* newNode = (AdjListNode*)malloc(sizeof(AdjListNode));
+    newNode->dest = dest;
+    newNode->weight = weight;
+    newNode->next = graph[src];
+    graph[src] = newNode;
+
+    
+    newNode = (AdjListNode*)malloc(sizeof(AdjListNode));
+    newNode->dest = src;
+    newNode->weight = weight;
+    newNode->next = graph[dest];
+    graph[dest] = newNode;
+}
+
+
 void loadGraph()
 {
-FILE *fp = fopen("graph.txt","r");
+    FILE *fp = fopen("graph.txt", "r");
 
-
-if(fp == NULL)
-{
-    printf("graph.txt not found\n");
-    return;
-}
-
-/* Initialize graph matrix */
-
-for(int i=0;i<MAX;i++)
-    for(int j=0;j<MAX;j++)
-        graph[i][j] = 0;
-
-int u,v,w;
-
-while(fscanf(fp,"%d %d %d",&u,&v,&w) == 3)
-{
-    if(u < locationCount && v < locationCount)
+    if (fp == NULL)
     {
-        graph[u][v] = w;
-        graph[v][u] = w;
+        printf("graph.txt not found\n");
+        return;
     }
+
+    initGraph();
+
+    int u, v, w;
+
+    while (fscanf(fp, "%d %d %d", &u, &v, &w) == 3)
+    {
+        if (u < locationCount && v < locationCount)
+        {
+            addEdge(u, v, w);
+        }
+    }
+
+    fclose(fp);
 }
 
-fclose(fp);
 
 
-}
 
-/* Find minimum distance node */
 int minDist(int dist[], int visited[])
 {
-int min = INT_MAX;
-int min_index = -1;
+    int min = INT_MAX;
+    int min_index = -1;
 
-
-for(int i=0;i<locationCount;i++)
-{
-    if(!visited[i] && dist[i] < min)
+    for (int i = 0; i < locationCount; i++)
     {
-        min = dist[i];
-        min_index = i;
-    }
-}
-
-return min_index;
-
-
-}
-
-/* Dijkstra shortest path */
-void dijkstra(int src,int dist[])
-{
-int visited[MAX];
-
-
-for(int i=0;i<locationCount;i++)
-{
-    dist[i] = INF;
-    visited[i] = 0;
-}
-
-if(src < 0 || src >= locationCount)
-    return;
-
-dist[src] = 0;
-
-for(int c=0;c<locationCount-1;c++)
-{
-    int u = minDist(dist,visited);
-
-    if(u == -1)
-        break;
-
-    visited[u] = 1;
-
-    for(int v=0;v<locationCount;v++)
-    {
-        if(!visited[v] &&
-           graph[u][v] &&
-           dist[u] + graph[u][v] < dist[v])
+        if (!visited[i] && dist[i] <= min)
         {
-            dist[v] = dist[u] + graph[u][v];
+            min = dist[i];
+            min_index = i;
+        }
+    }
+
+    return min_index;
+}
+
+
+void dijkstra(int src, int dist[])
+{
+    int visited[MAX];
+
+    for (int i = 0; i < locationCount; i++)
+    {
+        dist[i] = INF;
+        visited[i] = 0;
+    }
+
+    if (src < 0 || src >= locationCount)
+        return;
+
+    dist[src] = 0;
+
+    for (int c = 0; c < locationCount - 1; c++)
+    {
+        int u = minDist(dist, visited);
+
+        if (u == -1)
+            break;
+
+        visited[u] = 1;
+
+        
+        AdjListNode* temp = graph[u];
+        
+        while (temp != NULL)
+        {
+            int v = temp->dest;
+            int weight = temp->weight;
+
+            if (!visited[v] && dist[u] != INF && dist[u] + weight < dist[v])
+            {
+                dist[v] = dist[u] + weight;
+            }
+            
+            temp = temp->next;
         }
     }
 }
 
 
-}
-
-/* Return shortest distance between two nodes */
-int getDistance(int src,int dest)
+int getDistance(int src, int dest)
 {
-int dist[MAX];
+    int dist[MAX];
 
+    if (src < 0 || dest < 0 ||
+        src >= locationCount || dest >= locationCount)
+    {
+        return INF;
+    }
 
-if(src < 0 || dest < 0 ||
-   src >= locationCount || dest >= locationCount)
-{
-    return INF;
-}
+    dijkstra(src, dist);
 
-dijkstra(src,dist);
-
-return dist[dest];
-
-
+    return dist[dest];
 }

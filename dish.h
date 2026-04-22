@@ -1,8 +1,6 @@
 #ifndef DISH_H
 #define DISH_H
 
-#define MAX_DISHES 100
-
 typedef struct
 {
     char name[50];
@@ -10,10 +8,13 @@ typedef struct
     int price;
 } Dish;
 
-extern Dish dishes[MAX_DISHES];
+
+extern Dish *dishes;
 extern int dishCount;
+extern int dishCapacity;
 
 void loadDishes();
+void saveDishes();
 void addDish();
 void deleteDish();
 void viewDishes();

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h> 
 #include <string.h>
 #include "restaurant.h"
 #include "dish.h"
@@ -6,331 +7,340 @@
 #include "graph.h"
 #include "location.h"
 
-#define MAX_CART 20
-#define MAX_QUEUE 50
 
-/* -------- CART ITEM -------- */
 
 typedef struct
 {
-char restaurant[50];
-char dish[50];
-int price;
+    char restaurant[50];
+    char dish[50];
+    int price;
 } CartItem;
 
-/* -------- ORDER STRUCT -------- */
-
 typedef struct
 {
-CartItem items[MAX_CART];
-int itemCount;
-int location;
-int totalBill;
-int restaurantNode;
+    CartItem *items; 
+    int itemCount;
+    int location;
+    int totalBill;
+    int restaurantNode;
 } Order;
 
-/* -------- QUEUE -------- */
 
-Order orderQueue[MAX_QUEUE];
+Order *orderQueue = NULL;
+int queueCapacity = 0;
 int front = 0;
 int rear = -1;
 
-/* -------- CART -------- */
 
-CartItem cart[MAX_CART];
+CartItem *cart = NULL;
 int cartCount = 0;
+int cartCapacity = 0;
 
-char orderHistory[50][100];
+
+char **orderHistory = NULL;
 int orderCount = 0;
+int historyCapacity = 0;
 
-/* -------- QUEUE FUNCTIONS -------- */
 
 void enqueueOrder(Order o)
 {
-if(rear >= MAX_QUEUE-1)
-{
-printf("Order queue full\n");
-return;
-}
 
+    if(rear >= queueCapacity - 1)
+    {
+        queueCapacity = (queueCapacity == 0) ? 10 : queueCapacity * 2;
+        orderQueue = (Order*)realloc(orderQueue, queueCapacity * sizeof(Order));
+        
+        if(orderQueue == NULL)
+        {
+            printf("Memory allocation failed for order queue!\n");
+            return;
+        }
+    }
 
-rear++;
-orderQueue[rear] = o;
-
-
+    rear++;
+    orderQueue[rear] = o;
 }
 
 Order dequeueOrder()
 {
-return orderQueue[front++];
+    return orderQueue[front++];
 }
 
 int isQueueEmpty()
 {
-return front > rear;
+    return front > rear;
 }
-
-/* -------- FIND BEST RIDER -------- */
 
 int findBestRider(int restaurantNode, int customerNode)
 {
-int bestRider = -1;
-int bestDistance = 9999;
+    int bestRider = -1;
+    int bestDistance = 9999;
 
-
-for(int i=0;i<riderCount;i++)
-{
-    int d1 = getDistance(riders[i].node, restaurantNode);
-    int d2 = getDistance(restaurantNode, customerNode);
-
-    int total = d1 + d2;
-
-    if(total < bestDistance)
+    for(int i=0;i<riderCount;i++)
     {
-        bestDistance = total;
-        bestRider = i;
+        int d1 = getDistance(riders[i].node, restaurantNode);
+        int d2 = getDistance(restaurantNode, customerNode);
+
+        int total = d1 + d2;
+
+        if(total < bestDistance)
+        {
+            bestDistance = total;
+            bestRider = i;
+        }
     }
+
+    return bestRider;
 }
-
-return bestRider;
-
-
-}
-
-/* -------- PROCESS ORDER -------- */
 
 void processOrders()
 {
-while(!isQueueEmpty())
-{
-Order o = dequeueOrder();
-
-
-    printf("\n===== PROCESSING ORDER =====\n");
-
-    for(int i=0;i<o.itemCount;i++)
+    while(!isQueueEmpty())
     {
-        printf("%s (%s) - %d Tk\n",
-               o.items[i].dish,
-               o.items[i].restaurant,
-               o.items[i].price);
-    }
+        Order o = dequeueOrder();
 
-    printf("Total Bill : %d Tk\n", o.totalBill);
+        printf("\n===== PROCESSING ORDER =====\n");
 
-    int riderIndex = findBestRider(o.restaurantNode, o.location);
+        for(int i=0;i<o.itemCount;i++)
+        {
+            printf("%s (%s) - %d Tk\n",
+                   o.items[i].dish,
+                   o.items[i].restaurant,
+                   o.items[i].price);
+        }
 
-    if(riderIndex != -1)
-    {
-        printf("\n----- DELIVERY DETAILS -----\n");
-        printf("Rider Name : %s\n", riders[riderIndex].name);
-        printf("Phone      : %s\n", riders[riderIndex].phone);
+        printf("Total Bill : %d Tk\n", o.totalBill);
 
-        riders[riderIndex].node = o.location;
-    }
-    else
-    {
-        printf("No rider available\n");
-    }
+        int riderIndex = findBestRider(o.restaurantNode, o.location);
 
-    if(orderCount < 50)
-    {
+        if(riderIndex != -1)
+        {
+            printf("\n----- DELIVERY DETAILS -----\n");
+            printf("Rider Name : %s\n", riders[riderIndex].name);
+            printf("Phone      : %s\n", riders[riderIndex].phone);
+
+            riders[riderIndex].node = o.location;
+        }
+        else
+        {
+            printf("No rider available\n");
+        }
+
+        
+        if(orderCount >= historyCapacity)
+        {
+            historyCapacity = (historyCapacity == 0) ? 10 : historyCapacity * 2;
+            orderHistory = (char**)realloc(orderHistory, historyCapacity * sizeof(char*));
+        }
+
+        orderHistory[orderCount] = (char*)malloc(100 * sizeof(char));
         sprintf(orderHistory[orderCount],
                 "Items:%d | Total:%d Tk",
                 o.itemCount,
                 o.totalBill);
 
         orderCount++;
+
+        free(o.items);
+
+        printf("Order delivered successfully\n");
     }
-
-    printf("Order delivered successfully\n");
 }
-
-
-}
-
-/* -------- ORDER FOOD -------- */
 
 void orderFood()
 {
-int rChoice, dChoice;
-int dishIndexes[50];
-int count;
+    int rChoice, dChoice;
+    int count;
 
-
-cartCount = 0;
-
-while(1)
-{
-    if(restaurantCount == 0)
-    {
-        printf("No restaurants available\n");
+    cartCount = 0; 
+    
+ 
+    int *dishIndexes = (int*)malloc(dishCount * sizeof(int));
+    if (dishIndexes == NULL && dishCount > 0) {
+        printf("Memory allocation failed!\n");
         return;
     }
 
-    printf("\n===== SELECT RESTAURANT =====\n");
-
-    for(int i=0;i<restaurantCount;i++)
-        printf("%d. %s\n",i+1,restaurants[i].name);
-
-    printf("0 Finish Order\n");
-
-    printf("Enter choice: ");
-    scanf("%d",&rChoice);
-
-    if(rChoice == 0)
-        break;
-
-    if(rChoice < 1 || rChoice > restaurantCount)
+    while(1)
     {
-        printf("Invalid restaurant choice\n");
-        continue;
+        if(restaurantCount == 0)
+        {
+            printf("No restaurants available\n");
+            if(dishIndexes) free(dishIndexes);
+            return;
+        }
+
+        printf("\n===== SELECT RESTAURANT =====\n");
+
+        for(int i=0;i<restaurantCount;i++)
+            printf("%d. %s\n",i+1,restaurants[i].name);
+
+        printf("0 Finish Order\n");
+
+        printf("Enter choice: ");
+        scanf("%d",&rChoice);
+
+        if(rChoice == 0)
+            break;
+
+        if(rChoice < 1 || rChoice > restaurantCount)
+        {
+            printf("Invalid restaurant choice\n");
+            continue;
+        }
+
+        printf("\n===== SELECT DISH =====\n");
+
+        count = 0;
+
+        for(int i=0;i<dishCount;i++)
+        {
+            if(strcmp(dishes[i].restaurant,
+                      restaurants[rChoice-1].name)==0)
+            {
+                printf("%d. %s (%d Tk)\n",
+                       count+1,
+                       dishes[i].name,
+                       dishes[i].price);
+
+                dishIndexes[count++] = i;
+            }
+        }
+
+        printf("Enter choice: ");
+        scanf("%d",&dChoice);
+
+        if(dChoice < 1 || dChoice > count)
+        {
+            printf("Invalid dish choice\n");
+            continue;
+        }
+
+        int selected = dishIndexes[dChoice-1];
+
+        if(cartCount >= cartCapacity)
+        {
+            cartCapacity = (cartCapacity == 0) ? 10 : cartCapacity * 2;
+            cart = (CartItem*)realloc(cart, cartCapacity * sizeof(CartItem));
+        }
+
+        strcpy(cart[cartCount].restaurant, dishes[selected].restaurant);
+        strcpy(cart[cartCount].dish, dishes[selected].name);
+        cart[cartCount].price = dishes[selected].price;
+
+        cartCount++;
     }
 
-    printf("\n===== SELECT DISH =====\n");
-
-    count = 0;
-
-    for(int i=0;i<dishCount;i++)
+    if(cartCount == 0)
     {
-        if(strcmp(dishes[i].restaurant,
-                  restaurants[rChoice-1].name)==0)
-        {
-            printf("%d. %s (%d Tk)\n",
-                   count+1,
-                   dishes[i].name,
-                   dishes[i].price);
+        free(dishIndexes);
+        return;
+    }
 
-            dishIndexes[count++] = i;
+    printf("\n===== DELIVERY LOCATION =====\n");
+
+    for(int i=1;i<locationCount;i++)
+        printf("%d %s\n",i,locations[i].name);
+
+    int loc;
+
+    printf("Enter location choice: ");
+    scanf("%d",&loc);
+
+    if(loc < 1 || loc >= locationCount)
+    {
+        printf("Invalid location\n");
+        free(dishIndexes);
+        return;
+    }
+
+    int foodTotal = 0;
+
+    for(int i=0;i<cartCount;i++)
+        foodTotal += cart[i].price;
+
+    char **usedRestaurants = (char**)malloc(cartCount * sizeof(char*));
+    for(int i=0; i<cartCount; i++) {
+        usedRestaurants[i] = (char*)malloc(50 * sizeof(char));
+    }
+    
+    int usedCount = 0;
+
+    for(int i=0;i<cartCount;i++)
+    {
+        int found = 0;
+
+        for(int j=0;j<usedCount;j++)
+        {
+            if(strcmp(usedRestaurants[j], cart[i].restaurant)==0)
+            {
+                found = 1;
+                break;
+            }
+        }
+
+        if(!found)
+        {
+            strcpy(usedRestaurants[usedCount], cart[i].restaurant);
+            usedCount++;
         }
     }
 
-    printf("Enter choice: ");
-    scanf("%d",&dChoice);
+    int deliveryCharge = usedCount * 50;
+    int totalBill = foodTotal + deliveryCharge;
 
-    if(dChoice < 1 || dChoice > count)
+    printf("\n----- BILL DETAILS -----\n");
+    printf("Food Total      : %d Tk\n", foodTotal);
+    printf("Delivery Charge : %d Tk\n", deliveryCharge);
+    printf("Total Bill      : %d Tk\n", totalBill);
+
+    Order newOrder;
+    newOrder.itemCount = cartCount;
+    newOrder.location = loc;
+    newOrder.totalBill = totalBill;
+
+    int restaurantNode = -1;
+
+    for(int i=0;i<restaurantCount;i++)
     {
-        printf("Invalid dish choice\n");
-        continue;
-    }
-
-    int selected = dishIndexes[dChoice-1];
-
-    strcpy(cart[cartCount].restaurant,
-           dishes[selected].restaurant);
-
-    strcpy(cart[cartCount].dish,
-           dishes[selected].name);
-
-    cart[cartCount].price = dishes[selected].price;
-
-    cartCount++;
-}
-
-if(cartCount == 0)
-    return;
-
-printf("\n===== DELIVERY LOCATION =====\n");
-
-for(int i=1;i<locationCount;i++)
-    printf("%d %s\n",i,locations[i].name);
-
-int loc;
-
-printf("Enter location choice: ");
-scanf("%d",&loc);
-
-if(loc < 1 || loc >= locationCount)
-{
-    printf("Invalid location\n");
-    return;
-}
-
-int foodTotal = 0;
-
-for(int i=0;i<cartCount;i++)
-    foodTotal += cart[i].price;
-
-/* -------- DELIVERY CHARGE -------- */
-
-char usedRestaurants[20][50];
-int usedCount = 0;
-
-for(int i=0;i<cartCount;i++)
-{
-    int found = 0;
-
-    for(int j=0;j<usedCount;j++)
-    {
-        if(strcmp(usedRestaurants[j], cart[i].restaurant)==0)
+        if(strcmp(restaurants[i].name, cart[0].restaurant)==0)
         {
-            found = 1;
+            restaurantNode = restaurants[i].node;
             break;
         }
     }
 
-    if(!found)
+    newOrder.restaurantNode = restaurantNode;
+
+    newOrder.items = (CartItem*)malloc(cartCount * sizeof(CartItem));
+    for(int i=0;i<cartCount;i++)
     {
-        strcpy(usedRestaurants[usedCount], cart[i].restaurant);
-        usedCount++;
+        newOrder.items[i] = cart[i];
     }
-}
 
-int deliveryCharge = usedCount * 50;
+    enqueueOrder(newOrder);
 
-int totalBill = foodTotal + deliveryCharge;
+    printf("\nOrder added to queue successfully\n");
 
-printf("\n----- BILL DETAILS -----\n");
-printf("Food Total      : %d Tk\n", foodTotal);
-printf("Delivery Charge : %d Tk\n", deliveryCharge);
-printf("Total Bill      : %d Tk\n", totalBill);
-
-Order newOrder;
-
-newOrder.itemCount = cartCount;
-newOrder.location = loc;
-newOrder.totalBill = totalBill;
-
-int restaurantNode = -1;
-
-for(int i=0;i<restaurantCount;i++)
-{
-    if(strcmp(restaurants[i].name, cart[0].restaurant)==0)
-    {
-        restaurantNode = restaurants[i].node;
-        break;
+    free(dishIndexes);
+    for(int i=0; i<cartCount; i++) {
+        free(usedRestaurants[i]);
     }
+    free(usedRestaurants);
+
+    processOrders();
 }
-
-newOrder.restaurantNode = restaurantNode;
-
-for(int i=0;i<cartCount;i++)
-    newOrder.items[i] = cart[i];
-
-enqueueOrder(newOrder);
-
-printf("\nOrder added to queue successfully\n");
-
-processOrders();
-
-
-}
-
-/* -------- HISTORY -------- */
 
 void showHistory()
 {
-printf("\n===== ORDER HISTORY =====\n");
+    printf("\n===== ORDER HISTORY =====\n");
 
+    if(orderCount == 0)
+    {
+        printf("No orders yet\n");
+        return;
+    }
 
-if(orderCount == 0)
-{
-    printf("No orders yet\n");
-    return;
-}
-
-for(int i=0;i<orderCount;i++)
-    printf("%d. %s\n",i+1,orderHistory[i]);
-
-
+    for(int i=0;i<orderCount;i++)
+        printf("%d. %s\n",i+1,orderHistory[i]);
 }

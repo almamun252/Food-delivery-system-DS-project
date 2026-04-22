@@ -13,8 +13,6 @@
 
 int main()
 {
-/* -------- LOAD DATA -------- */
-
 
 loadUsers();
 loadLocations();
@@ -36,7 +34,7 @@ while(1)
     }
 
     printf("3 View Restaurants\n");
-    printf("4 View Top Rated Restaurants\n");   /* Heap Feature */
+    printf("4 View Top Rated Restaurants\n"); 
     printf("5 View Food Menu\n");
 
     if(loggedIn)
@@ -79,7 +77,7 @@ while(1)
             break;
 
         case 4:
-            showTopRestaurants();   /* Heap Feature */
+            showTopRestaurants();   
                 break;
         case 5:
             viewDishes();

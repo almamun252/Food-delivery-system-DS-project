@@ -1,9 +1,12 @@
 #include <stdio.h>
+#include <stdlib.h> 
 #include <string.h>
 #include "location.h"
 
-Location locations[MAX_LOCATIONS];
+
+Location *locations = NULL;
 int locationCount = 0;
+int locationCapacity = 0;
 
 void loadLocations()
 {
@@ -15,9 +18,29 @@ void loadLocations()
         return;
     }
 
-    while(fgets(locations[locationCount].name,50,fp))
+    char tempName[50];
+    
+    
+    while(fgets(tempName, 50, fp))
     {
-        locations[locationCount].name[strcspn(locations[locationCount].name,"\n")] = 0;
+        
+        tempName[strcspn(tempName, "\n")] = 0;
+
+        
+        if(locationCount >= locationCapacity)
+        {
+            locationCapacity = (locationCapacity == 0) ? 5 : locationCapacity * 2;
+            locations = (Location*)realloc(locations, locationCapacity * sizeof(Location));
+            
+            if(locations == NULL)
+            {
+                printf("Memory allocation failed for locations!\n");
+                fclose(fp);
+                return;
+            }
+        }
+
+        strcpy(locations[locationCount].name, tempName);
         locationCount++;
     }
 
@@ -34,8 +57,8 @@ void viewLocations()
         return;
     }
 
-    for(int i=1;i<locationCount;i++)
-        printf("%d %s\n",i,locations[i].name);
+    for(int i=1; i<locationCount; i++)
+        printf("%d %s\n", i, locations[i].name);
 
     printf("0 Back\n");
 }
